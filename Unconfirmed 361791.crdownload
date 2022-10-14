@@ -1,0 +1,491 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+#  # Project: Investigate No show appointment Dataset
+# 
+
+#  Introduction
+# Dataset Description 
+# This dataset collects information from 100k medical appointments in Brazil and is focused on the question of whether or not patients show up for their appointment. A number of characteristics about the patient are included in each row.
+# 
+# ● ‘ScheduledDay’ tells us on
+# what day the patient set up their
+# appointment.
+# 
+# ● ‘Neighborhood’ indicates the location of the hospital.
+# 
+# ● ‘Scholarship’ indicates whether or not the patient is enrolled in Brasilian welfare
+#  Question(s) for Analysis
+# 
+
+# ### we will try to know What factors are important for us to know in order to predict if a patient will show up for their scheduled appointment?
+# Questions we are trying to answer :
+# 
+# 1 - what is the overall appointment show-up vs. no show-up rate
+# 
+# 2 - what are the most feature that matter the most of ('Age', 'being alcoholic','Having an SMS', 'Gender', 'Scholarship'), to make the patient make it to his appiontment?
+
+# In[2]:
+
+
+# Use this cell to set up import statements for all of the packages that you plan to use.
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+# Remember to include a 'magic word' so that your visualizations are plotted
+#   inline with the notebook. See this page for more:
+#   http://ipython.readthedocs.io/en/stable/interactive/magics.html
+get_ipython().run_line_magic('matplotlib', 'inline')
+
+
+# ## Data Wrangling
+# 
+# > **Tip**: In this section of the report, you will load in the data, check for cleanliness,
+#     and then trim and clean your dataset for analysis. Make sure that you **document your data cleaning steps in mark-down 
+#     cells precisely and justify your cleaning decisions.**
+# 
+# ### General Properties
+# 
+
+# In[3]:
+
+
+# Load your data and print out a few lines. Perform operations to inspect data
+#   types and look for instances of missing or possibly errant data.
+
+
+# In[4]:
+
+
+df = pd.read_csv('noshowappointments-kagglev2-may-2016.csv')
+df.head()
+
+
+# In[5]:
+
+
+# find the mumber of patient  and thiere characteristic
+
+
+# In[6]:
+
+
+df.shape
+
+
+# In[7]:
+
+
+# check data type and check missing data
+
+
+# In[8]:
+
+
+df.info()
+
+
+# there are no missing data
+
+# In[9]:
+
+
+df.describe()
+
+
+# mean age = 37 years
+# 
+# maximum age 115 years
+# 
+# minimum age not make sense actually no age =-1
+
+# In[ ]:
+
+
+
+
+
+# Data Cleaning
+
+# In[10]:
+
+
+df.head()
+
+
+# In[11]:
+
+
+# we will clead date from not need for analysis characteristic [ 'PatientId','AppointmentID','ScheduledDay','AppointmentDay' ]
+
+
+# In[12]:
+
+
+df.drop([ 'PatientId','AppointmentID','ScheduledDay','AppointmentDay' ], axis = 1 , inplace=True)
+
+
+# In[13]:
+
+
+df.head()
+
+
+# In[14]:
+
+
+#rename columns='No-show' to 'No_show'
+
+
+# In[15]:
+
+
+df.rename(columns={'No-show':'No_show'}, inplace=True)
+df.head()
+
+
+# In[16]:
+
+
+#rename columns'Hipertension'to 'Hypertension' to correct spelling
+
+
+# In[17]:
+
+
+df.rename(columns={'Hipertension':'Hypertension'}, inplace=True)
+df.head()
+
+
+# Exploratory Data Analysis
+# 
+# 
+# Ageneral look on data
+
+# In[18]:
+
+
+# histgram of all data
+df.hist(figsize=(15,12));
+
+
+# most of patient did not suffer from chronic diseases nor handicapped
+# Patients who received mobile messages were half of those who did not
+# small persentage(around 9%) are enrolled in welfare program
+
+# In[19]:
+
+
+# convert yes and no to show and no show
+show=df.No_show=='No'
+noshow=df.No_show=='Yes'
+
+
+# In[56]:
+
+
+apoint = df['No_show'].value_counts()
+pieChart = apoint.plot.pie(figsize=(10,10), autopct='%1.1f%%', fontsize = 12);
+plt.title("Status" + ' (%) (Per appointment)\n', fontsize = 15)
+plt.legend();
+print('The number of those who showed 4 times who did not show at the clinic')
+
+
+# The number of those who showed 4 times who did not show at the clinic
+# 
+
+# In[20]:
+
+
+df[show].count()
+
+
+# In[21]:
+
+
+df[noshow].count()
+
+
+# The number of those who showed 4 times who did not show at the clinic
+
+# Analysing characteristics
+
+# In[22]:
+
+
+# comparison between show and no show according to Gender
+
+
+# In[23]:
+
+
+plt.figure(figsize=[14.70,8.27])
+df.Gender[show].hist(alpha= 0.5,label='show')
+df.Gender[noshow].hist(alpha=0.5,label='noshow')
+plt.legend()
+plt.title('comparison between show and no show according to Gender')
+plt.xlabel('Gender')
+plt.ylabel('Patients Number');
+
+
+# • the features  gender  is not a factor to decide if the person would come to 
+# his appointment or not!
+# 
+
+# In[24]:
+
+
+print(df.Gender[show].value_counts())
+
+
+# In[25]:
+
+
+print(df.Gender[noshow].value_counts())
+
+
+# Gender is insignificant because female is more than male in show and noshow
+
+# In[26]:
+
+
+#comparison between show and no show according to Scholarship
+
+
+# In[27]:
+
+
+plt.figure(figsize=[14.70,8.27])
+df.Scholarship[show].hist(alpha= 0.5,label='show')
+df.Scholarship[noshow].hist(alpha=0.5,label='noshow')
+plt.legend()
+plt.title('comparison between show and no show according to Scholarship')
+plt.xlabel('Scholarship')
+plt.ylabel('Patients Number');
+
+
+# people who has Scholarship are most likely to miss thier appointments
+
+# In[28]:
+
+
+print(df.Scholarship[show].value_counts())
+print(df.Scholarship[noshow].value_counts())
+
+
+# be enrolled in walfare is insignificant 
+
+# In[29]:
+
+
+#comparison between show and no show according to Hypertension
+
+
+# In[30]:
+
+
+plt.figure(figsize=[14.70,8.27])
+df.Hypertension[show].hist(alpha= 0.5,label='show')
+df.Hypertension[noshow].hist(alpha=0.5,label='noshow')
+plt.legend()
+plt.title('comparison between show and no show according to Hypertension')
+plt.xlabel('Hypertension')
+plt.ylabel('Patients Number');
+
+
+# In[31]:
+
+
+print(df.Hypertension[show].value_counts())
+print(df.Hypertension[noshow].value_counts())
+
+
+# Hypertension insignificant
+
+# In[32]:
+
+
+#comparison between show and no show according to Diabetes
+
+
+# In[33]:
+
+
+plt.figure(figsize=[14.70,8.27])
+df.Diabetes[show].hist(alpha= 0.5,label='show')
+df.Diabetes[noshow].hist(alpha=0.5,label='noshow')
+plt.legend()
+plt.title('comparison between show and no show according to Diabetes')
+plt.xlabel('Diabetes')
+plt.ylabel('Patients Number');
+
+
+# In[34]:
+
+
+print(df.Diabetes[show].value_counts())
+print(df.Diabetes[noshow].value_counts())
+
+
+# comparison between show and no show according to Diabetes is insignificant
+
+# In[35]:
+
+
+#comparison between show and no show according to Alcoholism
+
+
+# In[36]:
+
+
+plt.figure(figsize=[14.70,8.27])
+df.Alcoholism[show].hist(alpha= 0.5,label='show')
+df.Alcoholism[noshow].hist(alpha=0.5,label='noshow')
+plt.legend()
+plt.title('comparison between show and no show according to Alcoholism')
+plt.xlabel('Alcoholism')
+plt.ylabel('Patients Number');
+
+
+# • the features  alcoholic is not a factor to decide if the person would come to his appointment or not!
+# 
+
+# In[37]:
+
+
+print(df.Alcoholism[show].value_counts())
+print(df.Alcoholism[noshow].value_counts())
+
+
+# comparison between show and no show according to Alcoholism is insignificant
+
+# In[38]:
+
+
+#comparison between show and no show according to Handcap
+
+
+# In[39]:
+
+
+plt.figure(figsize=[14.70,8.27])
+df.Handcap[show].hist(alpha= 0.5,label='show')
+df.Handcap[noshow].hist(alpha=0.5,label='noshow')
+plt.legend()
+plt.title('comparison between show and no show according to Handcap')
+plt.xlabel('Hypertension')
+plt.ylabel('Patients Number');
+
+
+# • this features  is not a factor to decide if the person would come to his appointment 
+# or not
+
+# In[40]:
+
+
+print(df.Handcap[show].value_counts())
+print(df.Handcap[noshow].value_counts())
+
+
+# comparison between show and no show according to Handcap is insignificant
+
+# In[41]:
+
+
+# comparison between show and no show according to received SMS
+
+
+# In[42]:
+
+
+plt.figure(figsize=[14.70,8.27])
+df.SMS_received[show].hist(alpha= 0.5,label='show')
+df.SMS_received[noshow].hist(alpha=0.5,label='noshow')
+plt.legend()
+plt.title('comparison between show and no show according to received SMS')
+plt.xlabel('SMS_received')
+plt.ylabel('Patients Number');
+
+
+#  As we can see sending an SMS for the appiontment is not neccessary the right option to make sure that the patient will come(It seems strange)
+
+# In[43]:
+
+
+print(df.SMS_received[show].value_counts())
+print(df.SMS_received[noshow].value_counts())
+
+
+# It seems strange that most people attend without receiving messages
+
+# In[44]:
+
+
+# comparison between show and no show according to Age
+
+
+# In[45]:
+
+
+plt.figure(figsize=[14.70,8.27])
+df.Age[show].hist(alpha= 0.5,label='show')
+df.Age[noshow].hist(alpha=0.5,label='noshow')
+plt.legend()
+plt.title('comparison between show and no show according to Age')
+plt.xlabel('Age')
+plt.ylabel('Patients Number');
+
+
+# As we can see Age is the most factor that affect people who will attend or not
+
+# In[46]:
+
+
+print(df.Age[show].value_counts())
+print(df.Age[noshow].value_counts())
+
+
+# patient in age 0-10 showed mor than other age
+# 
+# As the age increases, the patient shows less desire to attend
+
+# In[47]:
+
+
+# comparison between show and no show according to Neighbourhood
+
+
+# In[48]:
+
+
+plt.figure(figsize=[14.70,8.27])
+df.Neighbourhood[show].value_counts().plot (kind='bar',alpha= 0.5,color='blue',label='show')
+df.Neighbourhood[noshow].value_counts().plot (kind='bar',alpha= 0.5,color='red',label='noshow')
+plt.legend()
+plt.title('comparison between show and no show according to Neighbourhood')
+plt.xlabel('Neighbourhood')
+plt.ylabel('Patients Number');
+
+
+# It seems that the neighborhood has a strong role in affecting the patients' viewing in the clinic
+
+#  Conclusions
+# 
+# 1- Neighbourhood is a strong related to patients showing up at the clinic .
+#  
+# 2-Age has a role as the 0-10 age group is the most present at the clinic -
+# As the age increases, the patient shows less desire to attend
+# 
+# 3- It seems strange that the most present at the clinic are those who did not receive SMS
+#  
+#  Limitations:
+# 
+# There can't be a relationship between the  patients showed up and a lot of characteristic like gender,chronic,diseases.
+
+# In[49]:
+
+
+from subprocess import call
+call(['python', '-m', 'nbconvert', 'Investigate_a_Dataset.ipynb'])
+
